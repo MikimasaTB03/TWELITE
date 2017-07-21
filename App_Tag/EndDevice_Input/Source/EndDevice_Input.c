@@ -37,6 +37,7 @@
 #include "flash.h"
 
 #include "ADXL345.h"
+#include "PulseCounter.h"
 
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
@@ -333,6 +334,7 @@ void cbAppColdStart(bool_t bAfterAhiInit) {
 			// イベント処理の初期化
 			vInitAppDoorTimer();
 		} else
+
 		// BME280
 		if ( sAppData.sFlash.sData.u8mode == PKT_ID_BME280 ) {
 			sToCoNet_AppContext.bSkipBootCalib = FALSE; // 起動時のキャリブレーションを行う
@@ -345,6 +347,43 @@ void cbAppColdStart(bool_t bAfterAhiInit) {
 
 			// イベント処理の初期化
 			vInitAppBME280();
+		} else
+
+		// MLX90614  // Added by Mikimasa
+		if ( sAppData.sFlash.sData.u8mode == PKT_ID_MLX90614 ) {
+			sToCoNet_AppContext.bSkipBootCalib = FALSE; // 起動時のキャリブレーションを行う
+			sToCoNet_AppContext.u8MacInitPending = TRUE; // 起動時の MAC 初期化を省略する(送信する時に初期化する)
+			// ADC の初期化
+			vInitADC();
+
+			// Other Hardware
+			vInitHardware(FALSE);
+
+			// イベント処理の初期化
+			vInitAppMLX90614();
+		} else
+
+		// PULSE COUNTER  // Added by Mikimasa
+		if ( sAppData.sFlash.sData.u8mode == PKT_ID_PULSE_COUNTER ) {
+			sToCoNet_AppContext.bSkipBootCalib = FALSE; // 起動時のキャリブレーションを行う
+			sToCoNet_AppContext.u8MacInitPending = TRUE; // 起動時の MAC 初期化を省略する(送信する時に初期化する)
+			// ADC の初期化
+			vInitADC();
+
+			// Other Hardware
+			vInitHardware(FALSE);
+
+			// for Pulse Counter Input  （特に必要ではない）
+			vPortAsInput(DIO1);  // PC0 (TWE-Lite :AI4端子)
+			vPortAsInput(DIO8);  // PC1 (TWE-Lite :PWM4端子)
+			//vPortDisablePullup(DIO1);  // 外付けプルアップある場合
+			//vPortDisablePullup(DIO8);  // 外付けプルアップある場合
+
+			// パルスカウンタ初期化 & スタート
+			vPulseCounter_setting();
+
+			// イベント処理の初期化
+			vInitAppPulseCounter();
 		} else
 		// S11059-02
 		if ( sAppData.sFlash.sData.u8mode == PKT_ID_S1105902 ) {

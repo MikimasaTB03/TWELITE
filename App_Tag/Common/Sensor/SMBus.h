@@ -87,6 +87,10 @@ PUBLIC void vSMBusInit(void);
 PUBLIC bool_t bSMBusWrite(uint8 u8Address, uint8 u8Command,
 						  uint8 u8Length, uint8* pu8Data);
 
+// #Added by Mikimasa
+PUBLIC bool_t bSMBusWrite_WO_STOP(uint8 u8Address, uint8 u8Command,
+						  uint8 u8Length, uint8* pu8Data);
+
 PUBLIC bool_t bSMBusRandomRead(uint8 u8Address, uint8 u8Command,
 						       uint8 u8Length, uint8* pu8Data);
 
@@ -96,6 +100,8 @@ PUBLIC bool_t bSMBusRandomRead_NACK(uint8 u8Address, uint8 u8Command,
 PUBLIC bool_t bSMBusSequentialRead(uint8 u8Address, uint8 u8Length,
 								   uint8* pu8Data);
 
+PUBLIC bool_t bSMBusSequentialRead_NACK(uint8 u8Address, uint8 u8Length,
+									uint8* pu8Data);
 /****************************************************************************/
 /***        Local Variables                                               ***/
 /****************************************************************************/

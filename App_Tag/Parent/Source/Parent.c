@@ -868,8 +868,9 @@ void vSerOutput_Standard(tsRxPktInfo sRxPktInfo, uint8 *p) {
 		}
 		break;
 
-
 	case PKT_ID_ADT7410:
+	case PKT_ID_MLX90614:    // Added by Mikimasa
+	case PKT_ID_MCP9600:     // Added by Mikimasa
 		_C {
 			uint8 u8batt = G_OCTET();
 
@@ -880,6 +881,34 @@ void vSerOutput_Standard(tsRxPktInfo sRxPktInfo, uint8 *p) {
 			// センサー情報
 			A_PRINTF(":ba=%04d:a1=%04d:a2=%04d:te=%04d" LB,
 					DECODE_VOLT(u8batt), u16adc1, u16adc2, i16temp);
+
+#ifdef USE_LCD
+			// LCD への出力
+			V_PRINTF_LCD("%03d:%08X:%03d:%02X:D:%04d:%04d:%04d\n",
+					u32sec % 1000,
+					sRxPktInfo.u32addr_1st,
+					sRxPktInfo.u8lqi_1st,
+					sRxPktInfo.u16fct & 0xFF,
+					u16adc1,
+					u16adc2
+					);
+			vLcdRefresh();
+#endif
+		}
+		break;
+
+	case PKT_ID_PULSE_COUNTER: // Added by Mikimasa
+		_C {
+			uint8 u8batt = G_OCTET();
+
+			uint16	u16adc1 = G_BE_WORD();
+			uint16	u16adc2 = G_BE_WORD();
+			uint16  u16cou0 = G_BE_WORD();
+			uint16  u16cou1 = G_BE_WORD();
+
+			// センサー情報
+			A_PRINTF(":ba=%04d:a1=%04d:a2=%04d:PC0=%05d:PC1=%05d" LB,
+					DECODE_VOLT(u8batt), u16adc1, u16adc2, u16cou0, u16cou1);
 
 #ifdef USE_LCD
 			// LCD への出力
@@ -1382,8 +1411,10 @@ void vSerOutput_SmplTag3( tsRxPktInfo sRxPktInfo, uint8 *p) {
 #endif
 	}
 
-
-	if (sRxPktInfo.u8pkt == PKT_ID_ADT7410) {
+	// 温度センサー
+	if ((sRxPktInfo.u8pkt == PKT_ID_ADT7410)
+		||(sRxPktInfo.u8pkt == PKT_ID_MLX90614)
+		||(sRxPktInfo.u8pkt == PKT_ID_MCP9600)){
 		uint8 u8batt = G_OCTET();
 		uint16 u16adc1 = G_BE_WORD();
 		uint16 u16adc2 = G_BE_WORD(); (void)u16adc2;
@@ -1413,6 +1444,54 @@ void vSerOutput_SmplTag3( tsRxPktInfo sRxPktInfo, uint8 *p) {
 				u16adc1,
 				u16adc2,
 				'D'
+		);
+
+#ifdef USE_LCD
+		// LCD への出力
+		V_PRINTF_LCD("%03d:%08X:%03d:%02X:S:%04d:%04d\n",
+				u32sec % 1000,
+				sRxPktInfo.u32addr_1st,
+				sRxPktInfo.u8lqi_1st,
+				sRxPktInfo.u16fct & 0xFF,
+				i16temp,
+				i16humd
+				);
+		vLcdRefresh();
+#endif
+	}
+
+	// パルスカウンター
+	if (sRxPktInfo.u8pkt == PKT_ID_PULSE_COUNTER){
+		uint8 u8batt = G_OCTET();
+		uint16 u16adc1 = G_BE_WORD();
+		uint16 u16adc2 = G_BE_WORD(); (void)u16adc2;
+		uint16 u16cou0 = G_BE_WORD();
+		uint16 u16cou1 = G_BE_WORD();
+
+		A_PRINTF( ";"
+				"%d;"			// TIME STAMP
+				"%08X;"			// 受信機のアドレス
+				"%03d;"			// LQI  (0-255)
+				"%03d;"			// 連番
+				"%07x;"			// シリアル番号
+				"%04d;"			// 電源電圧 (0-3600, mV)
+				"%05d;"			// Counter0
+				"%05d;"			// Counter1
+				"%04d;"			// adc1
+				"%04d;"			// adc2
+				"%c;"			// パケット識別子
+				LB,
+				u32TickCount_ms / 1000,
+				sRxPktInfo.u32addr_rcvr & 0x0FFFFFFF,
+				sRxPktInfo.u8lqi_1st,
+				sRxPktInfo.u16fct,
+				sRxPktInfo.u32addr_1st & 0x0FFFFFFF,
+				DECODE_VOLT(u8batt),
+				u16cou0,
+				u16cou1,
+				u16adc1,
+				u16adc2,
+				'P'
 		);
 
 #ifdef USE_LCD
@@ -1777,6 +1856,9 @@ void vSerOutput_Uart(tsRxPktInfo sRxPktInfo, uint8 *p) {
 		break;
 
 	case PKT_ID_ADT7410:
+	case PKT_ID_MLX90614:
+	case PKT_ID_MCP9600:
+	case PKT_ID_PULSE_COUNTER:
 		_C {
 			uint8	u8batt = G_OCTET();
 			uint16	u16adc0 = G_BE_WORD();

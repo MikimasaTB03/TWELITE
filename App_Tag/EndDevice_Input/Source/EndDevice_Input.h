@@ -89,6 +89,8 @@ void vInitAppSHT21();
 void vInitAppBME280();
 void vInitAppS1105902();
 void vInitAppADT7410();
+void vInitAppMLX90614();
+void vInitAppPulseCounter();
 void vInitAppMPL115A2();
 void vInitAppLIS3DH();
 void vInitAppL3GD20();

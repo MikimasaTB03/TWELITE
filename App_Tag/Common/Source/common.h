@@ -40,6 +40,9 @@ extern const uint8 au8EncKey[];
 #define PKT_ID_L3GD20 0x37
 #define PKT_ID_S1105902 0x38
 #define PKT_ID_BME280 0x39
+#define PKT_ID_MCP9600 0x41   // Added by Mikimasa(Reserved)
+#define PKT_ID_MLX90614 0x42  // Added by Mikimasa
+#define PKT_ID_PULSE_COUNTER 0x43 // Added by Mikimasa
 #define PKT_ID_IO_TIMER 0x51
 #define PKT_ID_UART 0x81
 #define PKT_ID_ADXL345_LOWENERGY 0xA1
@@ -79,6 +82,10 @@ extern const uint8 au8EncKey[];
 
 #define PORT_BAUD 17
 #define PORT_UART0_RX 7
+
+// For Pulse Counter0/1  (Added by Mikimasa)
+#define DIO1		1	// For Counter0
+#define	DIO8		8	// For Counter1
 
 #endif
 

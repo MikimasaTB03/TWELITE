@@ -65,7 +65,8 @@ APPSRC += LIS3DH.c
 APPSRC += L3GD20.c
 APPSRC += TSL2561.c
 APPSRC += sensor_driver.c
-
+APPSRC += MLX90614.c
+APPSRC += PulseCounter.c
 APPSRC += Interactive.c
 APPSRC += input_string.c
 
@@ -93,7 +94,8 @@ APPSRC += ProcessEv_MPL115A2.c
 APPSRC += ProcessEv_LIS3DH.c
 APPSRC += ProcessEv_L3GD20.c
 APPSRC += ProcessEv_UART.c
-
+APPSRC += ProcessEv_MLX90614.c
+APPSRC += ProcessEv_PulseCounter.c
 ### Target type
 # アプリケーション(.bin)をビルドするか、ライブラリ(.a)にするか指定します。
 # - ライブラリをリンクする場合は、ADDITIONAL_LIBS に定義を加えてください。

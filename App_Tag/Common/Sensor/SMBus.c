@@ -96,7 +96,8 @@ PUBLIC void vSMBusInit(void)
 #endif
 
 	/* run bus at 100KHz */
-	vAHI_SiMasterConfigure(TRUE, FALSE, 7);
+	vAHI_SiMasterConfigure(TRUE, FALSE, 31);
+	//vAHI_SiMasterConfigure(TRUE, FALSE, 7);
 			// 16/[(PreScaler + 1) x 5]MHz
 			//		--> 31:100KHz, 7:400KHz
 
@@ -169,6 +170,73 @@ PUBLIC bool_t bSMBusWrite(uint8 u8Address, uint8 u8Command, uint8 u8Length, uint
 
 }
 
+// #Added by Mikimasa
+// #直後のbSMBusRandomRead_XXの先頭でRepeatSTARTをするために、送信終わりにSTOP CONDITIONを出さないように改造
+PUBLIC bool_t bSMBusWrite_WO_STOP(uint8 u8Address, uint8 u8Command, uint8 u8Length, uint8* pu8Data)
+{
+
+	bool_t bCommandSent = FALSE;
+
+	/* Send address with write bit set */
+	vAHI_SiMasterWriteSlaveAddr(u8Address, E_AHI_SI_SLAVE_RW_SET);
+
+	vAHI_SiMasterSetCmdReg(E_AHI_SI_START_BIT,
+					 E_AHI_SI_NO_STOP_BIT,
+					 E_AHI_SI_NO_SLAVE_READ,
+					 E_AHI_SI_SLAVE_WRITE,
+					 E_AHI_SI_SEND_ACK,
+					 E_AHI_SI_NO_IRQ_ACK);
+
+	if(!bSMBusWait()) return(FALSE);
+
+	while(bCommandSent == FALSE || u8Length > 0){
+
+		if(!bCommandSent){
+
+			/* Send command byte */
+			vAHI_SiMasterWriteData8(u8Command);
+			bCommandSent = TRUE;
+
+		} else {
+
+			u8Length--;
+
+			/* Send data byte */
+			vAHI_SiMasterWriteData8(*pu8Data++);
+
+		}
+
+		/*
+		 * If its the last byte to be sent, send with
+		 * stop sequence set
+		 */
+		if(u8Length == 0){
+
+			vAHI_SiMasterSetCmdReg(E_AHI_SI_NO_START_BIT,
+							 E_AHI_SI_NO_STOP_BIT,  //E_AHI_SI_STOP_BITから変更
+							 E_AHI_SI_NO_SLAVE_READ,
+							 E_AHI_SI_SLAVE_WRITE,
+							 E_AHI_SI_SEND_ACK,
+							 E_AHI_SI_NO_IRQ_ACK);
+
+		} else {
+
+			vAHI_SiMasterSetCmdReg(E_AHI_SI_NO_START_BIT,
+							 E_AHI_SI_NO_STOP_BIT,
+							 E_AHI_SI_NO_SLAVE_READ,
+							 E_AHI_SI_SLAVE_WRITE,
+							 E_AHI_SI_SEND_ACK,
+							 E_AHI_SI_NO_IRQ_ACK);
+
+		}
+
+		if(!bSMBusWait()) return(FALSE);
+
+	}
+
+	return(TRUE);
+
+}
 
 PUBLIC bool_t bSMBusRandomRead(uint8 u8Address, uint8 u8Command, uint8 u8Length, uint8* pu8Data)
 {
